@@ -244,7 +244,7 @@ if let token = accessToken {
             Explore advanced features and integration patterns
           </p>
         </div>
-        
+
         <div className="max-w-4xl mx-auto space-y-12">
           {/* Request Interceptors */}
           <div className="animate-fade-up">
