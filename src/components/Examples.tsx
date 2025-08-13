@@ -170,9 +170,6 @@ class MTLSClientCertificateOperation: Operation, @unchecked Sendable  {
             } catch {
                 print("❌ Error \(error) no permission to access the keychain or you are in the simulator")
                 self.error = error
-                // Notifica um erro global para interromper processos dependentes
-                //NotificationCenter.default.post(name: .operationClientCertificateErrorOccurred, object: nil)
-                
                 
                 semaphore.signal()
             }
