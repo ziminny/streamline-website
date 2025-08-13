@@ -271,7 +271,8 @@ struct ResponseModel: Model {
 
 // Configure 
 
-}`})]}),v.jsxs("div",{className:"animate-fade-up",children:[v.jsx("h3",{className:"text-2xl font-semibold text-foreground mb-4",children:e.advanced.fullExample}),v.jsx(ze,{code:`func testRequest() async throws -> [ResponseModel]? {
+}`})]}),v.jsxs("div",{className:"animate-fade-up",children:[v.jsx("h3",{className:"text-2xl font-semibold text-foreground mb-4",children:e.advanced.fullExample}),v.jsx(ze,{code:`
+func testRequest() async throws -> [ResponseModel]? {
     return try await factory
         .makeHttpService()
         .interceptor(DefaultInterceptor())
@@ -287,26 +288,24 @@ struct ResponseModel: Model {
 }
 
 // Get cert if need
-
-    func download() async throws -> URL {
-        
-        guard let encryptedMTLSPassword else {
-            throw Error.encryptedMTLSPasswordMissing
-        }
-        
-        let request = MTLSCertificateDownloadRequestModel(encryptedMTLSPassword: encryptedMTLSPassword)
-        
-        let result = try await factory.makeHttpService()
-            .interceptor(DefaultInterceptor())
-            .authorization(DefaltAuthorization())
-            .downloadP12CertificateIfNeeded(nsParameters: Parameters(method: .POST, httpRequest: request, path: APIPath.default(.downloadUserCertificate)))
-        
-        return result
-        
+func download() async throws -> URL {
+    
+    guard let encryptedMTLSPassword else {
+        throw Error.encryptedMTLSPasswordMissing
     }
+    
+    let request = MTLSCertificateDownloadRequestModel(encryptedMTLSPassword: encryptedMTLSPassword)
+    
+    let result = try await factory.makeHttpService()
+        .interceptor(DefaultInterceptor())
+        .authorization(DefaltAuthorization())
+        .downloadP12CertificateIfNeeded(nsParameters: Parameters(method: .POST, httpRequest: request, path: APIPath.default(.downloadUserCertificate)))
+    
+    return result
+    
+}
 
 // Configure
-
 class MTLSClientCertificateOperation: Operation, @unchecked Sendable  {
     
     #if RELEASE
