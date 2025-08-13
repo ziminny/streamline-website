@@ -63,7 +63,8 @@ export function Examples({ translation }: ExamplesProps) {
 
 }`;
 
-  const fullExampleCode = `func testRequest() async throws -> [ResponseModel]? {
+  const fullExampleCode = `
+func testRequest() async throws -> [ResponseModel]? {
     return try await factory
         .makeHttpService()
         .interceptor(DefaultInterceptor())
@@ -79,26 +80,24 @@ export function Examples({ translation }: ExamplesProps) {
 }
 
 // Get cert if need
-
-    func download() async throws -> URL {
-        
-        guard let encryptedMTLSPassword else {
-            throw Error.encryptedMTLSPasswordMissing
-        }
-        
-        let request = MTLSCertificateDownloadRequestModel(encryptedMTLSPassword: encryptedMTLSPassword)
-        
-        let result = try await factory.makeHttpService()
-            .interceptor(DefaultInterceptor())
-            .authorization(DefaltAuthorization())
-            .downloadP12CertificateIfNeeded(nsParameters: Parameters(method: .POST, httpRequest: request, path: APIPath.default(.downloadUserCertificate)))
-        
-        return result
-        
+func download() async throws -> URL {
+    
+    guard let encryptedMTLSPassword else {
+        throw Error.encryptedMTLSPasswordMissing
     }
+    
+    let request = MTLSCertificateDownloadRequestModel(encryptedMTLSPassword: encryptedMTLSPassword)
+    
+    let result = try await factory.makeHttpService()
+        .interceptor(DefaultInterceptor())
+        .authorization(DefaltAuthorization())
+        .downloadP12CertificateIfNeeded(nsParameters: Parameters(method: .POST, httpRequest: request, path: APIPath.default(.downloadUserCertificate)))
+    
+    return result
+    
+}
 
 // Configure
-
 class MTLSClientCertificateOperation: Operation, @unchecked Sendable  {
     
     #if RELEASE
