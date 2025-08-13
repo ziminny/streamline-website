@@ -23,7 +23,7 @@ export function Header({ translation, language, onLanguageChange }: HeaderProps)
         <div className="flex items-center space-x-8">
         <div className="flex items-center space-x-2">
           <img 
-            src="https://raw.githubusercontent.com/ziminny/streamline-website -website/refs/heads/gh-pages/logo.png"  // Caminho relativo à pasta `public` (Next.js) ou raiz
+            src="https://raw.githubusercontent.com/ziminny/streamline-website/refs/heads/gh-pages/logo.png"  // Caminho relativo à pasta `public` (Next.js) ou raiz
             alt="Logo" 
             className="h-8 w-8 rounded-lg object-contain" 
           />
