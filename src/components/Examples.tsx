@@ -58,6 +58,9 @@ export function Examples({ translation }: ExamplesProps) {
                 path: ApiPath.defaultPath(.test)
             )
         )
+
+// Configure 
+
 }`;
 
   const fullExampleCode = `func testRequest() async throws -> [ResponseModel]? {
@@ -73,7 +76,127 @@ export function Examples({ translation }: ExamplesProps) {
                 path: ApiPath.defaultPath(.test)
             )
         )
-}`;
+}
+
+// Get cert if need
+
+    func download() async throws -> URL {
+        
+        guard let encryptedMTLSPassword else {
+            throw Error.encryptedMTLSPasswordMissing
+        }
+        
+        let request = MTLSCertificateDownloadRequestModel(encryptedMTLSPassword: encryptedMTLSPassword)
+        
+        let result = try await factory.makeHttpService()
+            .interceptor(DefaultInterceptor())
+            .authorization(DefaltAuthorization())
+            .downloadP12CertificateIfNeeded(nsParameters: Parameters(method: .POST, httpRequest: request, path: APIPath.default(.downloadUserCertificate)))
+        
+        return result
+        
+    }
+
+// Configure
+
+class MTLSClientCertificateOperation: Operation, @unchecked Sendable  {
+    
+    #if RELEASE
+    
+    @Factory
+    private var certServiceService: MTLSCertificateService
+    
+    @UserDefaultBackend(key: .tokens(.encryptedMTLSPassword))
+    private var encryptedMTLSPassword: String?
+    
+    private(set) var error: Error? = nil
+    
+    private func downloadCert() async throws   {
+        
+        let certExpirationDate = try await certServiceService.getExpirationCertDate()
+        
+        guard let certExpirationDate else {
+            print("❌ Error trying to get certificate expiration date")
+            throw ClientCertificateError.getCertExpirationDate
+        }
+        
+        guard let encryptedMTLSPassword else {
+            print("❌ Error trying to get encrypted password")
+            throw ClientCertificateError.getEncryptedMTLSPassword
+        }
+        
+        var keychainConfiguration = MTLSKeychainConfiguration()
+
+        // Get the encrypted password from the server
+        let encryption = Encryption(keyBase64: Constants.keyDataEncryptedClientCertificateSecretKey)
+        // Secret key previously received from the client
+        let password = try encryption.decrypt(encryptedMessage: encryptedMTLSPassword)
+        
+        guard let keychainLabel = Bundle.main.infoDictionary?["MTLSCertificateName"] as? String else {
+            print("❌ Error trying to get keychainLabel from info.plist")
+            throw ClientCertificateError.getKeychainLabel
+        }
+        
+        keychainConfiguration.setProperties(keychainLabel: keychainLabel, p12Password: password)
+        
+        let renew = certExpirationDate.renew()
+        let identityExistsInKeychain = keychainConfiguration.identityExistsInKeychain()
+
+        if renew || !identityExistsInKeychain {
+            
+            let url = try await certServiceService.download()
+            
+            keychainConfiguration.setProperties(p12CertificateURL: url)
+            
+            try keychainConfiguration.renewCertificate()
+            
+            try? FileManager.default.removeItem(atPath: url.path())
+            
+        }
+        
+    }
+    
+    override func main() {
+        guard !isCancelled else {
+            print("❌ Operation canceled, there was an error in operation MTLSClientCertificateOperation")
+            return
+        }
+        
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        Task {
+            do {
+                try await downloadCert()
+                semaphore.signal()
+            } catch {
+                print("❌ Error \(error) no permission to access the keychain or you are in the simulator")
+                self.error = error
+                // Notifica um erro global para interromper processos dependentes
+                //NotificationCenter.default.post(name: .operationClientCertificateErrorOccurred, object: nil)
+                
+                
+                semaphore.signal()
+            }
+        }
+        semaphore.wait()
+    }
+    
+    #endif
+    
+}
+
+extension MTLSClientCertificateOperation {
+    
+    enum ClientCertificateError: Error {
+        case getCertExpirationDate
+        case getEncryptedMTLSPassword
+        case getKeychainLabel
+    }
+    
+}
+
+
+`;
 
   const socketCode = `let instance = LCSocketManager.shared
 instance.disconnect()
