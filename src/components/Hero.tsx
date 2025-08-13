@@ -19,9 +19,6 @@ export function Hero({ translation }: HeroProps) {
       <div className="absolute inset-0 gradient-hero opacity-60"></div>
       <div className="container relative z-10">
         <div className="text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center rounded-full px-3 py-1 text-sm bg-primary text-primary-foreground mb-6 animate-fade-up">
-            <span className="font-medium">Currently under active development</span>
-          </div>
           
           <h1 className="text-5xl lg:text-7xl font-bold text-foreground mb-6 animate-fade-up">
             {translation.hero.title}
